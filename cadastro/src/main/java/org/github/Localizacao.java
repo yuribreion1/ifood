@@ -14,10 +14,10 @@ public class Localizacao extends PanacheEntityBase {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
+    public Long id;
 
-    Double latitude;
+    public Double latitude;
 
-    Double longitude;
+    public Double longitude;
 
 }

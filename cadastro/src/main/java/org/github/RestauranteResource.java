@@ -13,8 +13,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import javax.ws.rs.core.*;
 
 @Path("/restaurantes")
 @Produces(MediaType.APPLICATION_JSON)
@@ -28,32 +27,35 @@ public class RestauranteResource {
 
     @POST
     @Transactional
-    public Response adicionar(Restaurante restaurante) {
+    public Response adicionar(Restaurante restaurante, @Context UriInfo uriInfo) {
         restaurante.persist();
-        return Response.ok(restaurante).build();
+        UriBuilder uriBuilder = uriInfo.getAbsolutePathBuilder().path(Long.toString(restaurante.id));
+        return Response.created(uriBuilder.build()).entity(restaurante).build();
     }
 
     @PUT
     @Transactional
     @Path("{id}")
-    public void atualizar(@PathParam("id") Long id, Restaurante dto) {
+    public Response atualizar(@PathParam("id") Long id, Restaurante dto) {
         Optional<Restaurante> restauranteOp = Restaurante.findByIdOptional(id);
         if (restauranteOp.isEmpty()) throw new NotFoundException();
         Restaurante restaurante = restauranteOp.get();
 
         restaurante.nome = dto.nome;
         restaurante.persist();
+        return Response.ok(restaurante).build();
     }
 
     @DELETE
     @Transactional
     @Path("{id}")
-    public void deletar(@PathParam("id") Long id) {
+    public Response deletar(@PathParam("id") Long id) {
         Optional<Restaurante> restauranteOp = Restaurante.findByIdOptional(id);
 
         restauranteOp.ifPresentOrElse(Restaurante::delete, () -> {
             throw new NotFoundException();
         });
+        return Response.ok().build();
     }
     
 }

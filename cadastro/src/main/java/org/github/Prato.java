@@ -13,18 +13,18 @@ import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 
 @Entity
 @Table(name = "prato")
-public class Prato extends PanacheEntityBase{
+public class Prato extends PanacheEntityBase { 
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
+    public Long id;
 
-    String nome;
+    public String nome;
 
-    String descricao;
+    public String descricao;
 
     @ManyToOne
-    Restaurante restaurante;
+    public Restaurante restaurante;
 
-    BigDecimal preco;
+    public BigDecimal preco;
 }
