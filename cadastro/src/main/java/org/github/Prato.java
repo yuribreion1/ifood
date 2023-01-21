@@ -10,21 +10,27 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
+import lombok.*;
 
 @Entity
 @Table(name = "prato")
+@Builder
+@Setter
+@Getter
+@AllArgsConstructor
+@NoArgsConstructor
 public class Prato extends PanacheEntityBase { 
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    public Long id;
+    Long id;
 
-    public String nome;
+    String nome;
 
-    public String descricao;
+    String descricao;
 
     @ManyToOne
-    public Restaurante restaurante;
+    Restaurante restaurante;
 
-    public BigDecimal preco;
+    BigDecimal preco;
 }

@@ -9,33 +9,39 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 
 @Entity
+@ToString
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "restaurante")
 public class Restaurante extends PanacheEntityBase {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    public Long id;
+    Long id;
 
-    public String proprietario;
+    String proprietario;
 
-    public String cnpj;
+    String cnpj;
 
-    public String nome;
+    String nome;
 
     @ManyToOne
-    public Localizacao localizacao;
+    Localizacao localizacao;
 
     @CreationTimestamp
-    public Date dataCriacao;
+    Date dataCriacao;
 
     @UpdateTimestamp
-    public Date dataAtualizacao;
+    Date dataAtualizacao;
 
     
 }

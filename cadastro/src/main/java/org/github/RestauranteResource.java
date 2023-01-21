@@ -1,5 +1,10 @@
 package org.github;
 
+import io.quarkus.logging.Log;
+import io.quarkus.panache.common.Sort;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
+import org.eclipse.microprofile.openapi.annotations.tags.Tags;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -21,27 +26,31 @@ import javax.ws.rs.core.*;
 public class RestauranteResource {
 
     @GET
+    @Tag(name = "Restaurante")
     public List<Restaurante> buscar () {
-        return Restaurante.listAll();
+        Log.info("CADASTRO - Listando restaurantes");
+        return Restaurante.listAll(Sort.by("id"));
     }
 
     @POST
     @Transactional
+    @Tag(name = "Restaurante")
     public Response adicionar(Restaurante restaurante, @Context UriInfo uriInfo) {
         restaurante.persist();
         UriBuilder uriBuilder = uriInfo.getAbsolutePathBuilder().path(Long.toString(restaurante.id));
+        Log.info("CADASTRO - Adicionando restaurante: " + restaurante.toString());
         return Response.created(uriBuilder.build()).entity(restaurante).build();
     }
 
     @PUT
     @Transactional
     @Path("{id}")
+    @Tag(name = "Restaurante")
     public Response atualizar(@PathParam("id") Long id, Restaurante dto) {
-        Optional<Restaurante> restauranteOp = Restaurante.findByIdOptional(id);
-        if (restauranteOp.isEmpty()) throw new NotFoundException();
+        Optional<Restaurante> restauranteOp = verificarSeRestauranteExisteNoBanco(id);
         Restaurante restaurante = restauranteOp.get();
 
-        restaurante.nome = dto.nome;
+        restaurante.setNome(dto.getNome());
         restaurante.persist();
         return Response.ok(restaurante).build();
     }
@@ -49,13 +58,81 @@ public class RestauranteResource {
     @DELETE
     @Transactional
     @Path("{id}")
+    @Tag(name = "Restaurante")
     public Response deletar(@PathParam("id") Long id) {
-        Optional<Restaurante> restauranteOp = Restaurante.findByIdOptional(id);
+        Optional<Restaurante> restauranteOp = verificarSeRestauranteExisteNoBanco(id);
 
         restauranteOp.ifPresentOrElse(Restaurante::delete, () -> {
             throw new NotFoundException();
         });
         return Response.ok().build();
     }
-    
+
+    @GET
+    @Path("{id}/pratos")
+    @Tag(name = "Prato")
+    public List<Restaurante> listarPratos(@PathParam("id") Long id) {
+        Optional<Restaurante> restauranteOptional = verificarSeRestauranteExisteNoBanco(id);
+        return Prato.list("restaurante", restauranteOptional.get());
+    }
+
+    @POST
+    @Transactional
+    @Path("{id}/pratos")
+    @Tag(name = "Prato")
+    public Response adicionarPrato(@PathParam("id") Long id, Prato dto) {
+        Optional<Restaurante> restauranteOptional = verificarSeRestauranteExisteNoBanco(id);
+        Prato.builder()
+                .nome(dto.getNome())
+                .descricao(dto.getDescricao())
+                .preco(dto.getPreco())
+                .restaurante(restauranteOptional.get())
+                .build()
+                .persist();
+        return Response.status(Response.Status.CREATED).build();
+    }
+
+    @PUT
+    @Transactional
+    @Path("{id}/pratos/{idPrato}")
+    @Tag(name = "Prato")
+    public Response atualizarPrato(@PathParam("id") Long id,@PathParam("idPrato") Long idPrato, Prato dto) {
+        verificarSeRestauranteExisteNoBanco(id);
+        Optional<Prato> pratoOptional = verificarSePratoExisteNoBanco(idPrato);
+
+        Prato prato = pratoOptional.get();
+
+        prato.setNome(dto.getNome());
+        prato.setDescricao(dto.getDescricao());
+        prato.setPreco(dto.getPreco());
+
+        prato.persist();
+        return Response.ok(prato).build();
+    }
+
+    @DELETE
+    @Transactional
+    @Path("{id}/pratos/{idPrato}")
+    @Tag(name = "Prato")
+    public Response apagarPrato(@PathParam("id") Long id, @PathParam("idPrato") Long idPrato) {
+        verificarSeRestauranteExisteNoBanco(id);
+
+        Optional<Prato> pratoOptional = verificarSePratoExisteNoBanco(idPrato);
+        pratoOptional.ifPresentOrElse(Prato::delete, () -> {
+            throw new NotFoundException("Prato não encontrado");
+        });
+        return Response.ok(pratoOptional.get()).build();
+    }
+
+    private static Optional<Restaurante> verificarSeRestauranteExisteNoBanco(Long id) {
+        Optional<Restaurante> restauranteOptional = Restaurante.findByIdOptional(id);
+        if (restauranteOptional.isEmpty()) throw new NotFoundException("Restaurante não existe");
+        return restauranteOptional;
+    }
+
+    private static Optional<Prato> verificarSePratoExisteNoBanco(Long id) {
+        Optional<Prato> pratoOptional = Prato.findByIdOptional(id);
+        if (pratoOptional.isEmpty()) throw new NotFoundException("Prato não existe");
+        return pratoOptional;
+    }
 }
