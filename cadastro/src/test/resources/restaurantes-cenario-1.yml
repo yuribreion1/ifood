@@ -1,0 +1,7 @@
+restaurante:
+  - ID: 123
+    NOME: "Novo restaurantes"
+    PROPRIETARIO: "Jose da silva"
+  - ID: 456
+    NOME: "Novo restaurantes"
+    PROPRIETARIO: "Jose da silva"
