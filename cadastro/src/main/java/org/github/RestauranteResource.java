@@ -3,11 +3,13 @@ package org.github;
 import io.quarkus.logging.Log;
 import io.quarkus.panache.common.Sort;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
-import org.eclipse.microprofile.openapi.annotations.tags.Tags;
+import org.github.dto.RestauranteDTO;
+import org.github.dto.RestauranteMapper;
 
 import java.util.List;
 import java.util.Optional;
 
+import javax.inject.Inject;
 import javax.transaction.Transactional;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -25,6 +27,9 @@ import javax.ws.rs.core.*;
 @Consumes(MediaType.APPLICATION_JSON)
 public class RestauranteResource {
 
+    @Inject
+    RestauranteMapper restauranteMapper;
+
     @GET
     @Tag(name = "Restaurante")
     public List<Restaurante> buscar () {
@@ -35,7 +40,8 @@ public class RestauranteResource {
     @POST
     @Transactional
     @Tag(name = "Restaurante")
-    public Response adicionar(Restaurante restaurante, @Context UriInfo uriInfo) {
+    public Response adicionar(RestauranteDTO restauranteDTO, @Context UriInfo uriInfo) {
+        Restaurante restaurante = restauranteMapper.toRestaurante(restauranteDTO);
         restaurante.persist();
         UriBuilder uriBuilder = uriInfo.getAbsolutePathBuilder().path(Long.toString(restaurante.id));
         Log.info("CADASTRO - Adicionando restaurante: " + restaurante.toString());
@@ -46,11 +52,14 @@ public class RestauranteResource {
     @Transactional
     @Path("{id}")
     @Tag(name = "Restaurante")
-    public Response atualizar(@PathParam("id") Long id, Restaurante dto) {
+    public Response atualizar(@PathParam("id") Long id, RestauranteDTO restauranteDTO) {
         Optional<Restaurante> restauranteOp = verificarSeRestauranteExisteNoBanco(id);
         Restaurante restaurante = restauranteOp.get();
 
-        restaurante.setNome(dto.getNome());
+        restaurante.setNome(restauranteDTO.getNome());
+        restaurante.setCnpj(restauranteDTO.getCnpj());
+        restaurante.setProprietario(restauranteDTO.getProprietario());
+
         restaurante.persist();
         return Response.ok(restaurante).build();
     }

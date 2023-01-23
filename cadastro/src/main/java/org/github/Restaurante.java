@@ -2,12 +2,7 @@ package org.github;
 
 import java.util.Date;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -34,7 +29,7 @@ public class Restaurante extends PanacheEntityBase {
 
     String nome;
 
-    @ManyToOne
+    @OneToOne(cascade = CascadeType.ALL)
     Localizacao localizacao;
 
     @CreationTimestamp
